@@ -35,6 +35,7 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
   late FlutterTts flutterTts;
   bool isOfflineReady = false;
   Set<String> favorites = {};
+  String searchQuery = '';
 
   @override
   void initState() {
@@ -102,6 +103,22 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
       }
     }
     return favoritePhrases;
+  }
+
+  List<Map<String, String>> _getSearchResults() {
+    if (searchQuery.isEmpty) return [];
+    
+    List<Map<String, String>> results = [];
+    for (var category in categorizedPhrases.values) {
+      for (var phrase in category) {
+        if (phrase['japanese']!.contains(searchQuery) ||
+            phrase['english']!.toLowerCase().contains(searchQuery.toLowerCase()) ||
+            phrase['pronunciation']!.contains(searchQuery)) {
+          results.add(phrase);
+        }
+      }
+    }
+    return results;
   }
 
   final Map<String, List<Map<String, String>>> categorizedPhrases = {
@@ -209,7 +226,7 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
 
   @override
   Widget build(BuildContext context) {
-    final allTabs = ['♥ お気に入り', ...categorizedPhrases.keys];
+    final allTabs = ['🔍 検索', '♥ お気に入り', ...categorizedPhrases.keys];
     
     return DefaultTabController(
       length: allTabs.length,
@@ -228,13 +245,58 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
         ),
         body: TabBarView(
           children: [
+            // 検索タブ
+            Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: TextField(
+                    onChanged: (value) {
+                      setState(() {
+                        searchQuery = value;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      hintText: 'フレーズを検索...',
+                      prefixIcon: const Icon(Icons.search),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.green[300]!),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: Colors.green[700]!, width: 2),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: searchQuery.isEmpty
+                      ? const Center(
+                          child: Text(
+                            'キーワードを入力してフレーズを検索してください',
+                            style: TextStyle(color: Colors.grey, fontSize: 16),
+                          ),
+                        )
+                      : _getSearchResults().isEmpty
+                          ? const Center(
+                              child: Text(
+                                '検索結果がありません',
+                                style: TextStyle(color: Colors.grey, fontSize: 16),
+                              ),
+                            )
+                          : ListView.builder(
+                              itemCount: _getSearchResults().length,
+                              itemBuilder: (context, index) {
+                                return _buildPhraseCard(_getSearchResults()[index]);
+                              },
+                            ),
+                ),
+              ],
+            ),
             // お気に入りタブ
-            ListView.builder(
-              itemCount: _getFavoritePhrases().length,
-              itemBuilder: (context, index) {
-                final favoritePhrases = _getFavoritePhrases();
-                if (favoritePhrases.isEmpty) {
-                  return const Center(
+            _getFavoritePhrases().isEmpty
+                ? const Center(
                     child: Padding(
                       padding: EdgeInsets.all(32.0),
                       child: Text(
@@ -243,11 +305,13 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
                         style: TextStyle(color: Colors.grey, fontSize: 16),
                       ),
                     ),
-                  );
-                }
-                return _buildPhraseCard(favoritePhrases[index]);
-              },
-            ),
+                  )
+                : ListView.builder(
+                    itemCount: _getFavoritePhrases().length,
+                    itemBuilder: (context, index) {
+                      return _buildPhraseCard(_getFavoritePhrases()[index]);
+                    },
+                  ),
             // カテゴリタブ
             ...categorizedPhrases.values.map((phrases) {
               return ListView.builder(
