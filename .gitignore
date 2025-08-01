@@ -48,3 +48,22 @@ app.*.map.json
 *.jks
 *.keystore
 android/key.properties
+
+# iOS signing files
+ios/Runner.xcworkspace/xcuserdata/
+ios/Runner.xcodeproj/xcuserdata/
+ios/Runner.xcodeproj/project.xcworkspace/xcuserdata/
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/flutter_export_environment.sh
+
+# Temporary files
+*.tmp
+*.temp
+create_icon.html
+
+# Screenshots (keep directory structure but ignore actual files)
+screenshots/*.png
+screenshots/*.jpg
+screenshots/*.jpeg
+!screenshots/README.md

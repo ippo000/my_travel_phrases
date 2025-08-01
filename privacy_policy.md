@@ -19,4 +19,35 @@
 
 ## お問い合わせ
 プライバシーに関するご質問は、以下までお問い合わせください：
-[your-email@example.com]
+
+**サポートページ**: https://[username].github.io/ireland-travel-phrases/
+**メール**: [your-email@example.com]
+**GitHub**: https://github.com/[username]/ireland-travel-phrases
+
+---
+
+# Privacy Policy - Ireland Travel Phrases
+
+Last updated: January 2025
+
+## Data Collection
+The "Ireland Travel Phrases" app does not collect any personal information.
+
+## Stored Data
+- Favorite phrase settings
+- App configuration
+
+All data is stored locally on the user's device and is never transmitted externally.
+
+## Third-party Services
+This app does not use third-party analytics or advertising services.
+
+## Audio Features
+The audio playback feature uses the device's local speech engine. No audio data is transmitted externally.
+
+## Contact
+For privacy-related questions, please contact:
+
+**Support Page**: https://[username].github.io/ireland-travel-phrases/
+**Email**: [your-email@example.com]
+**GitHub**: https://github.com/[username]/ireland-travel-phrases
