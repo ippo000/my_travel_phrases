@@ -1,5 +1,5 @@
-name: my_travel_phrases
-description: "A new Flutter project."
+name: ireland_travel_phrases
+description: "アイルランド旅行で使える実用的な英会話フレーズ集。オフライン対応で音声再生機能付き。"
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev

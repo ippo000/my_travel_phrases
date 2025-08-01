@@ -11,7 +11,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'アイルランド旅行英会話',
+      title: 'Ireland Travel Phrases',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         appBarTheme: const AppBarTheme(
@@ -119,6 +120,33 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
       }
     }
     return results;
+  }
+
+  void _showAboutDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Ireland Travel Phrases'),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Version: 1.0.0'),
+            SizedBox(height: 8),
+            Text('アイルランド旅行で使える実用的な英会話フレーズ集です。'),
+            SizedBox(height: 8),
+            Text('プライバシーポリシー:'),
+            Text('本アプリは個人情報を収集しません。すべてのデータはローカルに保存されます。', style: TextStyle(fontSize: 12)),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('OK'),
+          ),
+        ],
+      ),
+    );
   }
 
   final Map<String, List<Map<String, String>>> categorizedPhrases = {
@@ -232,7 +260,13 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
       length: allTabs.length,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('🍀 アイルランド旅行英会話'),
+          title: const Text('🍀 Ireland Travel Phrases'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.info_outline),
+              onPressed: () => _showAboutDialog(context),
+            ),
+          ],
           backgroundColor: const Color(0xFF228B22),
           foregroundColor: Colors.white,
           bottom: TabBar(
