@@ -33,6 +33,7 @@ class TravelPhrasesPage extends StatefulWidget {
 
 class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
   late FlutterTts flutterTts;
+  bool isOfflineReady = false;
 
   @override
   void initState() {
@@ -42,12 +43,42 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
   }
 
   void _initTts() async {
-    await flutterTts.setLanguage('en-IE');
-    await flutterTts.setSpeechRate(0.5);
+    try {
+      // オフライン対応の設定
+      await flutterTts.setLanguage('en-US'); // より一般的な言語に変更
+      await flutterTts.setSpeechRate(0.5);
+      await flutterTts.setVolume(1.0);
+      await flutterTts.setPitch(1.0);
+      
+      // ローカル音声エンジンを優先
+      await flutterTts.setSharedInstance(true);
+      
+      setState(() {
+        isOfflineReady = true;
+      });
+    } catch (e) {
+      // エラーが発生してもアプリは動作する
+      setState(() {
+        isOfflineReady = false;
+      });
+    }
   }
 
   void _speak(String text) async {
-    await flutterTts.speak(text);
+    if (!isOfflineReady) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('音声機能が利用できません')),
+      );
+      return;
+    }
+    
+    try {
+      await flutterTts.speak(text);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('音声再生に失敗しました')),
+      );
+    }
   }
 
   final List<Map<String, String>> phrases = const [
@@ -165,12 +196,15 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
                     ),
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.green[700],
+                        color: isOfflineReady ? Colors.green[700] : Colors.grey[400],
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: IconButton(
-                        onPressed: () => _speak(phrase['english']!),
-                        icon: const Icon(Icons.play_arrow, color: Colors.white),
+                        onPressed: isOfflineReady ? () => _speak(phrase['english']!) : null,
+                        icon: Icon(
+                          isOfflineReady ? Icons.play_arrow : Icons.offline_bolt,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ],
