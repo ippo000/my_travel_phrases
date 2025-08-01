@@ -34,6 +34,7 @@ class TravelPhrasesPage extends StatefulWidget {
 class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
   late FlutterTts flutterTts;
   bool isOfflineReady = false;
+  Set<String> favorites = {};
 
   @override
   void initState() {
@@ -81,6 +82,28 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
     }
   }
 
+  void _toggleFavorite(String phraseKey) {
+    setState(() {
+      if (favorites.contains(phraseKey)) {
+        favorites.remove(phraseKey);
+      } else {
+        favorites.add(phraseKey);
+      }
+    });
+  }
+
+  List<Map<String, String>> _getFavoritePhrases() {
+    List<Map<String, String>> favoritePhrases = [];
+    for (var category in categorizedPhrases.values) {
+      for (var phrase in category) {
+        if (favorites.contains(phrase['english'])) {
+          favoritePhrases.add(phrase);
+        }
+      }
+    }
+    return favoritePhrases;
+  }
+
   final Map<String, List<Map<String, String>>> categorizedPhrases = {
     '挨拶': [
       {'japanese': 'こんにちは', 'english': 'Hello', 'pronunciation': 'ハロー'},
@@ -110,6 +133,7 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
   };
 
   Widget _buildPhraseCard(Map<String, String> phrase) {
+    final isFavorite = favorites.contains(phrase['english']);
     return Card(
       margin: const EdgeInsets.all(8.0),
       color: Colors.green[50],
@@ -156,6 +180,13 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
                   ],
                 ),
               ),
+              IconButton(
+                onPressed: () => _toggleFavorite(phrase['english']!),
+                icon: Icon(
+                  isFavorite ? Icons.favorite : Icons.favorite_border,
+                  color: isFavorite ? Colors.red : Colors.grey,
+                ),
+              ),
               Container(
                 decoration: BoxDecoration(
                   color: isOfflineReady ? Colors.green[700] : Colors.grey[400],
@@ -178,8 +209,10 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
 
   @override
   Widget build(BuildContext context) {
+    final allTabs = ['♥ お気に入り', ...categorizedPhrases.keys];
+    
     return DefaultTabController(
-      length: categorizedPhrases.keys.length,
+      length: allTabs.length,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('🍀 アイルランド旅行英会話'),
@@ -190,16 +223,39 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
             indicatorColor: Colors.white,
             labelColor: Colors.white,
             unselectedLabelColor: Colors.white70,
-            tabs: categorizedPhrases.keys.map((category) => Tab(text: category)).toList(),
+            tabs: allTabs.map((category) => Tab(text: category)).toList(),
           ),
         ),
         body: TabBarView(
-          children: categorizedPhrases.values.map((phrases) {
-            return ListView.builder(
-              itemCount: phrases.length,
-              itemBuilder: (context, index) => _buildPhraseCard(phrases[index]),
-            );
-          }).toList(),
+          children: [
+            // お気に入りタブ
+            ListView.builder(
+              itemCount: _getFavoritePhrases().length,
+              itemBuilder: (context, index) {
+                final favoritePhrases = _getFavoritePhrases();
+                if (favoritePhrases.isEmpty) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(32.0),
+                      child: Text(
+                        'お気に入りのフレーズがありません\n♥ボタンでフレーズを追加してください',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.grey, fontSize: 16),
+                      ),
+                    ),
+                  );
+                }
+                return _buildPhraseCard(favoritePhrases[index]);
+              },
+            ),
+            // カテゴリタブ
+            ...categorizedPhrases.values.map((phrases) {
+              return ListView.builder(
+                itemCount: phrases.length,
+                itemBuilder: (context, index) => _buildPhraseCard(phrases[index]),
+              );
+            }).toList(),
+          ],
         ),
       ),
     );
