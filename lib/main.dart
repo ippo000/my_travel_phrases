@@ -44,6 +44,7 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
   bool isOfflineReady = false;
   Set<String> favorites = {};
   String searchQuery = '';
+  List<Map<String, String>> userPhrases = [];
 
   @override
   void initState() {
@@ -138,11 +139,18 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
 
   List<Map<String, String>> _getFavoritePhrases() {
     List<Map<String, String>> favoritePhrases = [];
+    // 既存のフレーズからお気に入りを取得
     for (var category in categorizedPhrases.values) {
       for (var phrase in category) {
         if (favorites.contains(phrase['english'])) {
           favoritePhrases.add(phrase);
         }
+      }
+    }
+    // ユーザー追加フレーズからお気に入りを取得
+    for (var phrase in userPhrases) {
+      if (favorites.contains(phrase['english'])) {
+        favoritePhrases.add(phrase);
       }
     }
     return favoritePhrases;
@@ -152,6 +160,7 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
     if (searchQuery.isEmpty) return [];
 
     List<Map<String, String>> results = [];
+    // 既存のフレーズを検索
     for (var category in categorizedPhrases.values) {
       for (var phrase in category) {
         if (phrase['japanese']!.contains(searchQuery) ||
@@ -163,7 +172,84 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
         }
       }
     }
+    // ユーザー追加フレーズを検索
+    for (var phrase in userPhrases) {
+      if (phrase['japanese']!.contains(searchQuery) ||
+          phrase['english']!.toLowerCase().contains(
+            searchQuery.toLowerCase(),
+          ) ||
+          phrase['pronunciation']!.contains(searchQuery)) {
+        results.add(phrase);
+      }
+    }
     return results;
+  }
+
+  void _showAddPhraseDialog() {
+    final japaneseController = TextEditingController();
+    final englishController = TextEditingController();
+    final pronunciationController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('新しいフレーズを追加'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: japaneseController,
+              decoration: const InputDecoration(
+                labelText: '日本語',
+                hintText: '例: こんにちは',
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: englishController,
+              decoration: const InputDecoration(
+                labelText: '英語',
+                hintText: '例: Hello',
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: pronunciationController,
+              decoration: const InputDecoration(
+                labelText: '発音（カタカナ）',
+                hintText: '例: ハロー',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('キャンセル'),
+          ),
+          TextButton(
+            onPressed: () {
+              if (japaneseController.text.isNotEmpty &&
+                  englishController.text.isNotEmpty &&
+                  pronunciationController.text.isNotEmpty) {
+                setState(() {
+                  userPhrases.add({
+                    'japanese': japaneseController.text,
+                    'english': englishController.text,
+                    'pronunciation': pronunciationController.text,
+                  });
+                });
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('フレーズを追加しました')),
+                );
+              }
+            },
+            child: const Text('追加'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showAboutDialog(BuildContext context) {
@@ -586,7 +672,7 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
 
   @override
   Widget build(BuildContext context) {
-    final allTabs = ['🔍 検索', '♥ お気に入り', ...categorizedPhrases.keys];
+    final allTabs = ['🔍 検索', '♥ お気に入り', '➕ マイフレーズ', ...categorizedPhrases.keys];
 
     return DefaultTabController(
       length: allTabs.length,
@@ -623,6 +709,12 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
                 )
                 .toList(),
           ),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: _showAddPhraseDialog,
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          foregroundColor: Theme.of(context).colorScheme.onPrimary,
+          child: const Icon(Icons.add),
         ),
         body: TabBarView(
           children: [
@@ -742,6 +834,51 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
                     itemCount: _getFavoritePhrases().length,
                     itemBuilder: (context, index) {
                       return _buildPhraseCard(_getFavoritePhrases()[index]);
+                    },
+                  ),
+            // マイフレーズタブ
+            userPhrases.isEmpty
+                ? Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.add_circle_outline,
+                            size: 64,
+                            color: Theme.of(context).colorScheme.outline,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'オリジナルフレーズがありません',
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '右下の＋ボタンでフレーズを追加してください',
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                                ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: userPhrases.length,
+                    itemBuilder: (context, index) {
+                      return _buildPhraseCard(userPhrases[index]);
                     },
                   ),
             // カテゴリタブ
