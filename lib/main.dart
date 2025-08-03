@@ -14,10 +14,20 @@ class MyApp extends StatelessWidget {
       title: 'Ireland Travel Phrases',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF2E7D32),
+          brightness: Brightness.light,
+        ),
+        cardTheme: CardTheme(
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
         appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF228B22),
-          foregroundColor: Colors.white,
+          centerTitle: true,
+          elevation: 0,
         ),
       ),
       home: const TravelPhrasesPage(),
@@ -160,27 +170,58 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
       {'japanese': 'ごめんなさい', 'english': 'I am sorry', 'pronunciation': 'アイ アム ソーリー'},
       {'japanese': 'さようなら', 'english': 'Goodbye', 'pronunciation': 'グッドバイ'},
       {'japanese': 'また明日', 'english': 'See you tomorrow', 'pronunciation': 'シー ユー トゥモロー'},
+      {'japanese': 'はじめまして', 'english': 'Nice to meet you', 'pronunciation': 'ナイス トゥ ミート ユー'},
+      {'japanese': 'お元気ですか？', 'english': 'How are you?', 'pronunciation': 'ハウ アー ユー'},
+      {'japanese': '元気です', 'english': 'I am fine', 'pronunciation': 'アイ アム ファイン'},
     ],
     '食事・パブ': [
       {'japanese': 'パブはどこですか？', 'english': 'Where is the pub?', 'pronunciation': 'ウェア イズ ザ パブ'},
       {'japanese': 'ギネスを1杯ください', 'english': 'One pint of Guinness, please', 'pronunciation': 'ワン パイント オブ ギネス プリーズ'},
       {'japanese': 'ビールを2杯ください', 'english': 'Two beers, please', 'pronunciation': 'トゥー ビアズ プリーズ'},
+      {'japanese': 'ウイスキーをください', 'english': 'Whiskey, please', 'pronunciation': 'ウイスキー プリーズ'},
       {'japanese': 'メニューをください', 'english': 'Menu, please', 'pronunciation': 'メニュー プリーズ'},
       {'japanese': 'おすすめは何ですか？', 'english': 'What do you recommend?', 'pronunciation': 'ワット ドゥ ユー レコメンド'},
       {'japanese': 'フィッシュアンドチップスください', 'english': 'Fish and chips, please', 'pronunciation': 'フィッシュ アンド チップス プリーズ'},
+      {'japanese': 'アイリッシュシチューください', 'english': 'Irish stew, please', 'pronunciation': 'アイリッシュ スチュー プリーズ'},
+      {'japanese': 'ベジタリアン料理はありますか？', 'english': 'Do you have vegetarian food?', 'pronunciation': 'ドゥ ユー ハブ ベジタリアン フード'},
       {'japanese': 'お会計お願いします', 'english': 'Check, please', 'pronunciation': 'チェック プリーズ'},
       {'japanese': 'いくらですか？', 'english': 'How much is it?', 'pronunciation': 'ハウ マッチ イズ イット'},
       {'japanese': 'カードで支払いできますか？', 'english': 'Can I pay by card?', 'pronunciation': 'キャン アイ ペイ バイ カード'},
+      {'japanese': 'チップを含めてください', 'english': 'Please include the tip', 'pronunciation': 'プリーズ インクルード ザ チップ'},
     ],
     '観光': [
       {'japanese': 'ダブリン城はどこですか？', 'english': 'Where is Dublin Castle?', 'pronunciation': 'ウェア イズ ダブリン キャッスル'},
+      {'japanese': 'トリニティカレッジはどこですか？', 'english': 'Where is Trinity College?', 'pronunciation': 'ウェア イズ トリニティ カレッジ'},
       {'japanese': 'チェックインお願いします', 'english': 'Check in, please', 'pronunciation': 'チェック イン プリーズ'},
       {'japanese': 'チェックアウトお願いします', 'english': 'Check out, please', 'pronunciation': 'チェック アウト プリーズ'},
       {'japanese': '部屋の鍵をください', 'english': 'Room key, please', 'pronunciation': 'ルーム キー プリーズ'},
+      {'japanese': 'WiFiのパスワードは？', 'english': 'What is the WiFi password?', 'pronunciation': 'ワット イズ ザ ワイファイ パスワード'},
       {'japanese': 'トイレはどこですか？', 'english': 'Where is the toilet?', 'pronunciation': 'ウェア イズ ザ トイレット'},
       {'japanese': '駅はどこですか？', 'english': 'Where is the station?', 'pronunciation': 'ウェア イズ ザ ステーション'},
       {'japanese': '写真を撮ってください', 'english': 'Take a photo, please', 'pronunciation': 'テイク ア フォト プリーズ'},
       {'japanese': '入場料はいくらですか？', 'english': 'How much is the entrance fee?', 'pronunciation': 'ハウ マッチ イズ ジ エントランス フィー'},
+      {'japanese': 'ガイドツアーはありますか？', 'english': 'Do you have guided tours?', 'pronunciation': 'ドゥ ユー ハブ ガイデッド ツアーズ'},
+      {'japanese': '何時に開いていますか？', 'english': 'What time do you open?', 'pronunciation': 'ワット タイム ドゥ ユー オープン'},
+    ],
+    '交通・移動': [
+      {'japanese': 'バス停はどこですか？', 'english': 'Where is the bus stop?', 'pronunciation': 'ウェア イズ ザ バス ストップ'},
+      {'japanese': '空港までお願いします', 'english': 'To the airport, please', 'pronunciation': 'トゥ ジ エアポート プリーズ'},
+      {'japanese': 'タクシーを呼んでください', 'english': 'Please call a taxi', 'pronunciation': 'プリーズ コール ア タクシー'},
+      {'japanese': 'いくらかかりますか？', 'english': 'How much does it cost?', 'pronunciation': 'ハウ マッチ ダズ イット コスト'},
+      {'japanese': 'ここで停めてください', 'english': 'Please stop here', 'pronunciation': 'プリーズ ストップ ヒア'},
+      {'japanese': '電車のチケットをください', 'english': 'Train ticket, please', 'pronunciation': 'トレイン チケット プリーズ'},
+      {'japanese': '何番ホームですか？', 'english': 'Which platform?', 'pronunciation': 'ウィッチ プラットフォーム'},
+      {'japanese': '次の電車はいつですか？', 'english': 'When is the next train?', 'pronunciation': 'ウェン イズ ザ ネクスト トレイン'},
+    ],
+    'ショッピング': [
+      {'japanese': 'いくらですか？', 'english': 'How much is this?', 'pronunciation': 'ハウ マッチ イズ ジス'},
+      {'japanese': '安くしてください', 'english': 'Can you make it cheaper?', 'pronunciation': 'キャン ユー メイク イット チーパー'},
+      {'japanese': 'これをください', 'english': 'I will take this', 'pronunciation': 'アイ ウィル テイク ジス'},
+      {'japanese': '試着できますか？', 'english': 'Can I try this on?', 'pronunciation': 'キャン アイ トライ ジス オン'},
+      {'japanese': '他の色はありますか？', 'english': 'Do you have other colors?', 'pronunciation': 'ドゥ ユー ハブ アザー カラーズ'},
+      {'japanese': 'レシートをください', 'english': 'Receipt, please', 'pronunciation': 'レシート プリーズ'},
+      {'japanese': '返品できますか？', 'english': 'Can I return this?', 'pronunciation': 'キャン アイ リターン ジス'},
+      {'japanese': '免税手続きできますか？', 'english': 'Can I get tax-free?', 'pronunciation': 'キャン アイ ゲット タックス フリー'},
     ],
     '緊急時': [
       {'japanese': '道に迷いました', 'english': 'I am lost', 'pronunciation': 'アイ アム ロスト'},
@@ -190,79 +231,85 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
       {'japanese': '警察を呼んでください', 'english': 'Please call the police', 'pronunciation': 'プリーズ コール ザ ポリース'},
       {'japanese': '救急車を呼んでください', 'english': 'Please call an ambulance', 'pronunciation': 'プリーズ コール アン アンビュランス'},
       {'japanese': '日本領事館はどこですか？', 'english': 'Where is the Japanese embassy?', 'pronunciation': 'ウェア イズ ザ ジャパニーズ エンバシー'},
+      {'japanese': 'パスポートを紛失しました', 'english': 'I lost my passport', 'pronunciation': 'アイ ロスト マイ パスポート'},
+      {'japanese': '盗難にあいました', 'english': 'I was robbed', 'pronunciation': 'アイ ワズ ロブド'},
     ],
   };
 
   Widget _buildPhraseCard(Map<String, String> phrase) {
     final isFavorite = favorites.contains(phrase['english']);
     return Card(
-      margin: const EdgeInsets.all(8.0),
-      color: Colors.green[50],
-      elevation: 3,
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.green[200]!, width: 1),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            children: [
-              Expanded(
-                flex: 3,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      phrase['japanese']!,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Color.fromARGB(255, 46, 125, 50),
-                      ),
+      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    phrase['japanese']!,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      phrase['english']!,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color.fromARGB(255, 56, 142, 60),
-                        fontWeight: FontWeight.w500,
-                      ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    phrase['english']!,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.w500,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      phrase['pronunciation']!,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color.fromARGB(255, 117, 117, 117),
-                      ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    phrase['pronunciation']!,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontStyle: FontStyle.italic,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              IconButton(
-                onPressed: () => _toggleFavorite(phrase['english']!),
-                icon: Icon(
-                  isFavorite ? Icons.favorite : Icons.favorite_border,
-                  color: isFavorite ? Colors.red : Colors.grey,
+            ),
+            const SizedBox(width: 12),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                IconButton.filled(
+                  onPressed: () => _toggleFavorite(phrase['english']!),
+                  icon: Icon(
+                    isFavorite ? Icons.favorite : Icons.favorite_border,
+                  ),
+                  style: IconButton.styleFrom(
+                    backgroundColor: isFavorite 
+                        ? Theme.of(context).colorScheme.errorContainer
+                        : Theme.of(context).colorScheme.surfaceVariant,
+                    foregroundColor: isFavorite 
+                        ? Theme.of(context).colorScheme.onErrorContainer
+                        : Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
-              ),
-              Container(
-                decoration: BoxDecoration(
-                  color: isOfflineReady ? Colors.green[700] : Colors.grey[400],
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: IconButton(
+                const SizedBox(width: 8),
+                IconButton.filled(
                   onPressed: isOfflineReady ? () => _speak(phrase['english']!) : null,
                   icon: Icon(
                     isOfflineReady ? Icons.play_arrow : Icons.offline_bolt,
-                    color: Colors.white,
+                  ),
+                  style: IconButton.styleFrom(
+                    backgroundColor: isOfflineReady 
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).colorScheme.surfaceVariant,
+                    foregroundColor: isOfflineReady 
+                        ? Theme.of(context).colorScheme.onPrimary
+                        : Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -276,9 +323,14 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
       length: allTabs.length,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('🍀 Ireland Travel Phrases'),
+          title: Text(
+            '🍀 Ireland Travel Phrases',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           actions: [
-            IconButton(
+            IconButton.outlined(
               icon: const Icon(Icons.info_outline),
               onPressed: () => _showAboutDialog(context),
             ),
@@ -287,10 +339,16 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
           foregroundColor: Colors.white,
           bottom: TabBar(
             isScrollable: true,
-            indicatorColor: Colors.white,
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white70,
-            tabs: allTabs.map((category) => Tab(text: category)).toList(),
+            tabAlignment: TabAlignment.start,
+            tabs: allTabs.map((category) => Tab(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: Text(
+                  category,
+                  style: const TextStyle(fontWeight: FontWeight.w500),
+                ),
+              ),
+            )).toList(),
           ),
         ),
         body: TabBarView(
@@ -300,39 +358,57 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
               children: [
                 Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: TextField(
+                  child: SearchBar(
+                    hintText: 'フレーズを検索...',
+                    leading: const Icon(Icons.search),
                     onChanged: (value) {
                       setState(() {
                         searchQuery = value;
                       });
                     },
-                    decoration: InputDecoration(
-                      hintText: 'フレーズを検索...',
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.green[300]!),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: Colors.green[700]!, width: 2),
-                      ),
-                    ),
+                    elevation: MaterialStateProperty.all(2),
                   ),
                 ),
                 Expanded(
                   child: searchQuery.isEmpty
-                      ? const Center(
-                          child: Text(
-                            'キーワードを入力してフレーズを検索してください',
-                            style: TextStyle(color: Colors.grey, fontSize: 16),
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.search,
+                                size: 64,
+                                color: Theme.of(context).colorScheme.outline,
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'キーワードを入力してフレーズを検索してください',
+                                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
                           ),
                         )
                       : _getSearchResults().isEmpty
-                          ? const Center(
-                              child: Text(
-                                '検索結果がありません',
-                                style: TextStyle(color: Colors.grey, fontSize: 16),
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.search_off,
+                                    size: 64,
+                                    color: Theme.of(context).colorScheme.outline,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    '検索結果がありません',
+                                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ],
                               ),
                             )
                           : ListView.builder(
@@ -346,13 +422,34 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
             ),
             // お気に入りタブ
             _getFavoritePhrases().isEmpty
-                ? const Center(
+                ? Center(
                     child: Padding(
-                      padding: EdgeInsets.all(32.0),
-                      child: Text(
-                        'お気に入りのフレーズがありません\n♥ボタンでフレーズを追加してください',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.grey, fontSize: 16),
+                      padding: const EdgeInsets.all(32.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.favorite_border,
+                            size: 64,
+                            color: Theme.of(context).colorScheme.outline,
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'お気に入りのフレーズがありません',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '♥ボタンでフレーズを追加してください',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
                       ),
                     ),
                   )
