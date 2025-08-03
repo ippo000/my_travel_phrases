@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
+import 'config/api_config.dart';
 
 void main() {
   runApp(const MyApp());
@@ -45,12 +47,26 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
   Set<String> favorites = {};
   String searchQuery = '';
   List<Map<String, String>> userPhrases = [];
+  late GenerativeModel geminiModel;
+  bool isAiLoading = false;
 
+  // Gemini API Key
+  static const String apiKey = String.fromEnvironment('GEMINI_API_KEY');
   @override
   void initState() {
     super.initState();
     flutterTts = FlutterTts();
     _initTts();
+    _initGemini();
+  }
+
+  void _initGemini() {
+    if (ApiConfig.isApiKeyConfigured) {
+      geminiModel = GenerativeModel(
+        model: 'gemini-pro',
+        apiKey: ApiConfig.geminiApiKey,
+      );
+    }
   }
 
   void _initTts() async {
@@ -61,7 +77,7 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
         'en-GB', // イギリス英語（アイルランドに近い）
         'en-US', // フォールバック
       ];
-      
+
       bool languageSet = false;
       for (String lang in preferredLanguages) {
         try {
@@ -72,18 +88,18 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
           continue;
         }
       }
-      
+
       if (!languageSet) {
         await flutterTts.setLanguage('en-US');
       }
-      
+
       await flutterTts.setSpeechRate(0.45); // アイルランドなまりに合わせて少し遅く
       await flutterTts.setVolume(1.0);
       await flutterTts.setPitch(0.95); // 少し低めのピッチ
 
       // オフライン音声エンジンを優先
       await flutterTts.setSharedInstance(true);
-      
+
       // オフライン音声の確認
       var engines = await flutterTts.getEngines;
       if (engines != null && engines.isNotEmpty) {
@@ -106,24 +122,24 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
 
   void _speak(String text) async {
     if (!isOfflineReady) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(
-        content: Text('オフライン音声機能が利用できません。デバイスの音声設定を確認してください。'),
-        duration: Duration(seconds: 3),
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('オフライン音声機能が利用できません。デバイスの音声設定を確認してください。'),
+          duration: Duration(seconds: 3),
+        ),
+      );
       return;
     }
 
     try {
       await flutterTts.speak(text);
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(
-        content: Text('音声再生に失敗しました。アイルランド英語音声がインストールされていない可能性があります。'),
-        duration: Duration(seconds: 4),
-      ));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('音声再生に失敗しました。アイルランド英語音声がインストールされていない可能性があります。'),
+          duration: Duration(seconds: 4),
+        ),
+      );
     }
   }
 
@@ -185,6 +201,67 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
     return results;
   }
 
+  Future<void> _translateWithAI(
+    TextEditingController japaneseController,
+    TextEditingController englishController,
+    TextEditingController pronunciationController,
+  ) async {
+    if (japaneseController.text.isEmpty) return;
+    
+    if (!ApiConfig.isApiKeyConfigured) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Gemini APIキーが設定されていません')),
+      );
+      return;
+    }
+
+    setState(() {
+      isAiLoading = true;
+    });
+
+    try {
+      final prompt =
+          '''
+日本語のフレーズ「${japaneseController.text}」をアイルランド旅行で使える自然な英語に翻訳してください。
+以下の形式で回答してください：
+English: [英語翻訳]
+Pronunciation: [カタカナ発音]
+
+アイルランドで使われる表現や方言を含めて、自然で実用的な翻訳をお願いします。
+''';
+
+      final content = [Content.text(prompt)];
+      final response = await geminiModel.generateContent(content);
+
+      if (response.text != null) {
+        final lines = response.text!.split('\n');
+        String english = '';
+        String pronunciation = '';
+
+        for (String line in lines) {
+          if (line.startsWith('English:')) {
+            english = line.replaceFirst('English:', '').trim();
+          } else if (line.startsWith('Pronunciation:')) {
+            pronunciation = line.replaceFirst('Pronunciation:', '').trim();
+          }
+        }
+
+        if (english.isNotEmpty && pronunciation.isNotEmpty) {
+          englishController.text = english;
+          pronunciationController.text = pronunciation;
+        }
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('AI翻訳に失敗しました: $e')));
+    } finally {
+      setState(() {
+        isAiLoading = false;
+      });
+    }
+  }
+
   void _showAddPhraseDialog() {
     final japaneseController = TextEditingController();
     final englishController = TextEditingController();
@@ -192,62 +269,241 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('新しいフレーズを追加'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: japaneseController,
-              decoration: const InputDecoration(
-                labelText: '日本語',
-                hintText: '例: こんにちは',
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('新しいフレーズを追加'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: japaneseController,
+                decoration: InputDecoration(
+                  labelText: '日本語',
+                  hintText: '例: こんにちは',
+                  suffixIcon: IconButton(
+                    icon: isAiLoading
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.auto_awesome),
+                    onPressed: isAiLoading
+                        ? null
+                        : () async {
+                            await _translateWithAI(
+                              japaneseController,
+                              englishController,
+                              pronunciationController,
+                            );
+                            setDialogState(() {});
+                          },
+                    tooltip: 'AI翻訳',
+                  ),
+                ),
               ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: englishController,
+                decoration: const InputDecoration(
+                  labelText: '英語',
+                  hintText: '例: Hello',
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: pronunciationController,
+                decoration: const InputDecoration(
+                  labelText: '発音（カタカナ）',
+                  hintText: '例: ハロー',
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('キャンセル'),
             ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: englishController,
-              decoration: const InputDecoration(
-                labelText: '英語',
-                hintText: '例: Hello',
-              ),
-            ),
-            const SizedBox(height: 8),
-            TextField(
-              controller: pronunciationController,
-              decoration: const InputDecoration(
-                labelText: '発音（カタカナ）',
-                hintText: '例: ハロー',
-              ),
+            TextButton(
+              onPressed: () {
+                if (japaneseController.text.isNotEmpty &&
+                    englishController.text.isNotEmpty &&
+                    pronunciationController.text.isNotEmpty) {
+                  setState(() {
+                    userPhrases.add({
+                      'japanese': japaneseController.text,
+                      'english': englishController.text,
+                      'pronunciation': pronunciationController.text,
+                    });
+                  });
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(const SnackBar(content: Text('フレーズを追加しました')));
+                }
+              },
+              child: const Text('追加'),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('キャンセル'),
+      ),
+    );
+  }
+
+  void _showAiChatDialog() {
+    final messageController = TextEditingController();
+    List<Map<String, String>> chatHistory = [];
+    bool isChatLoading = false;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setChatState) => AlertDialog(
+          title: const Text('🤖 AI会話練習'),
+          content: SizedBox(
+            width: double.maxFinite,
+            height: 400,
+            child: Column(
+              children: [
+                Expanded(
+                  child: chatHistory.isEmpty
+                      ? const Center(
+                          child: Text('アイルランド旅行のシチュエーションで会話練習しましょう！'),
+                        )
+                      : ListView.builder(
+                          itemCount: chatHistory.length,
+                          itemBuilder: (context, index) {
+                            final message = chatHistory[index];
+                            final isUser = message['sender'] == 'user';
+                            return Align(
+                              alignment: isUser
+                                  ? Alignment.centerRight
+                                  : Alignment.centerLeft,
+                              child: Container(
+                                margin: const EdgeInsets.symmetric(vertical: 4),
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: isUser
+                                      ? Theme.of(context).colorScheme.primary
+                                      : Theme.of(
+                                          context,
+                                        ).colorScheme.surfaceVariant,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  message['text']!,
+                                  style: TextStyle(
+                                    color: isUser
+                                        ? Theme.of(
+                                            context,
+                                          ).colorScheme.onPrimary
+                                        : Theme.of(
+                                            context,
+                                          ).colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: messageController,
+                        decoration: const InputDecoration(
+                          hintText: 'メッセージを入力...',
+                          border: OutlineInputBorder(),
+                        ),
+                        onSubmitted: (text) async {
+                          if (text.isNotEmpty && !isChatLoading) {
+                            setChatState(() {
+                              chatHistory.add({'sender': 'user', 'text': text});
+                              isChatLoading = true;
+                            });
+                            messageController.clear();
+
+                            try {
+                              final prompt =
+                                  '''
+あなたはアイルランドのフレンドリーな現地人です。日本人旅行者と英語で会話してください。
+アイルランドの文化や観光地、食べ物などを紹介しながら、自然で友好的な会話をしてください。
+旅行者のメッセージ: "$text"
+
+英語で答えてください。150文字以内でお願いします。
+''';
+
+                              final content = [Content.text(prompt)];
+                              final response = await geminiModel
+                                  .generateContent(content);
+
+                              if (response.text != null) {
+                                setChatState(() {
+                                  chatHistory.add({
+                                    'sender': 'ai',
+                                    'text': response.text!,
+                                  });
+                                });
+                              }
+                            } catch (e) {
+                              setChatState(() {
+                                chatHistory.add({
+                                  'sender': 'ai',
+                                  'text':
+                                      'Sorry, I\'m having trouble responding right now.',
+                                });
+                              });
+                            } finally {
+                              setChatState(() {
+                                isChatLoading = false;
+                              });
+                            }
+                          }
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      onPressed: isChatLoading
+                          ? null
+                          : () async {
+                              final text = messageController.text;
+                              if (text.isNotEmpty) {
+                                messageController.clear();
+                                setChatState(() {
+                                  chatHistory.add({
+                                    'sender': 'user',
+                                    'text': text,
+                                  });
+                                  isChatLoading = true;
+                                });
+
+                                // 同じロジックを実行
+                              }
+                            },
+                      icon: isChatLoading
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Icon(Icons.send),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-          TextButton(
-            onPressed: () {
-              if (japaneseController.text.isNotEmpty &&
-                  englishController.text.isNotEmpty &&
-                  pronunciationController.text.isNotEmpty) {
-                setState(() {
-                  userPhrases.add({
-                    'japanese': japaneseController.text,
-                    'english': englishController.text,
-                    'pronunciation': pronunciationController.text,
-                  });
-                });
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('フレーズを追加しました')),
-                );
-              }
-            },
-            child: const Text('追加'),
-          ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('閉じる'),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -261,15 +517,17 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Version: 1.1.0'),
+            Text('Version: 1.2.0'),
             SizedBox(height: 8),
             Text('アイルランド旅行で使える実用的な英会話フレーズ集です。'),
             SizedBox(height: 8),
             Text('🇮🇪 アイルランドなまりの音声に対応（オフライン対応）'),
             SizedBox(height: 8),
+            Text('🤖 Gemini AIで翻訳・会話練習機能'),
+            SizedBox(height: 8),
             Text('プライバシーポリシー:'),
             Text(
-              '本アプリは個人情報を収集しません。すべてのデータはローカルに保存され、インターネット接続なしでも使用できます。',
+              '本アプリは個人情報を収集しません。AI機能はインターネット接続が必要です。',
               style: TextStyle(fontSize: 12),
             ),
           ],
@@ -672,7 +930,12 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
 
   @override
   Widget build(BuildContext context) {
-    final allTabs = ['🔍 検索', '♥ お気に入り', '➕ マイフレーズ', ...categorizedPhrases.keys];
+    final allTabs = [
+      '🔍 検索',
+      '♥ お気に入り',
+      '➕ マイフレーズ',
+      ...categorizedPhrases.keys,
+    ];
 
     return DefaultTabController(
       length: allTabs.length,
@@ -685,6 +948,12 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
             ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600),
           ),
           actions: [
+            IconButton.outlined(
+              icon: const Icon(Icons.smart_toy),
+              onPressed: _showAiChatDialog,
+              tooltip: 'AI会話練習',
+            ),
+            const SizedBox(width: 8),
             IconButton.outlined(
               icon: const Icon(Icons.info_outline),
               onPressed: () => _showAboutDialog(context),
