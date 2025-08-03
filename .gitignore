@@ -49,3 +49,5 @@ app.*.map.json
 .env.production
 lib/config/api_keys.dart
 api_keys.dart
+
+*.jks

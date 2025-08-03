@@ -49,9 +49,6 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
   List<Map<String, String>> userPhrases = [];
   late GenerativeModel geminiModel;
   bool isAiLoading = false;
-
-  // Gemini API Key
-  static const String apiKey = String.fromEnvironment('GEMINI_API_KEY');
   @override
   void initState() {
     super.initState();
@@ -63,7 +60,7 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
   void _initGemini() {
     if (ApiConfig.isApiKeyConfigured) {
       geminiModel = GenerativeModel(
-        model: 'gemini-pro',
+        model: 'gemini-2.5-flash',
         apiKey: ApiConfig.geminiApiKey,
       );
     }
@@ -207,11 +204,11 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
     TextEditingController pronunciationController,
   ) async {
     if (japaneseController.text.isEmpty) return;
-    
+
     if (!ApiConfig.isApiKeyConfigured) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Gemini APIキーが設定されていません')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Gemini APIキーが設定されていません')));
       return;
     }
 
