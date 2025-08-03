@@ -29,11 +29,11 @@
 - [x] スクリーンショット撮影（iPad用）
 
 ## 🌐 Web準備
-- [ ] GitHub Pages設定（プライバシーポリシー用）
-- [ ] サポートページ作成
+- [x] GitHub Pages設定（プライバシーポリシー用）
+- [x] サポートページ作成
 
 ## 📱 App Store Connect
-- [ ] Apple Developer アカウント登録
+- [ ] 🔄 Apple Developer アカウント登録（支払いエラー対応中）
 - [ ] App Store Connect でアプリ作成
 - [ ] アプリ情報入力
 - [ ] スクリーンショットアップロード
@@ -43,7 +43,7 @@
 
 ## 🤖 Google Play Console
 - [x] Google Play Console アカウント作成済み
-- [ ] アプリ作成
+- [ ] 🔄 認証待ち（アプリ作成不可）
 - [ ] ストア掲載情報入力
 - [ ] .aabファイルアップロード
 - [ ] 審査提出
