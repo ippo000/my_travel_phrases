@@ -11,7 +11,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Ireland Travel Phrases',
+      title: 'Ireland Travel Phrases (Irish Accent)',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
@@ -54,18 +54,47 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
 
   void _initTts() async {
     try {
-      // オフライン対応の設定
-      await flutterTts.setLanguage('en-US'); // より一般的な言語に変更
-      await flutterTts.setSpeechRate(0.5);
+      // アイルランド英語の設定を試行
+      List<String> preferredLanguages = [
+        'en-IE', // アイルランド英語
+        'en-GB', // イギリス英語（アイルランドに近い）
+        'en-US', // フォールバック
+      ];
+      
+      bool languageSet = false;
+      for (String lang in preferredLanguages) {
+        try {
+          await flutterTts.setLanguage(lang);
+          languageSet = true;
+          break;
+        } catch (e) {
+          continue;
+        }
+      }
+      
+      if (!languageSet) {
+        await flutterTts.setLanguage('en-US');
+      }
+      
+      await flutterTts.setSpeechRate(0.45); // アイルランドなまりに合わせて少し遅く
       await flutterTts.setVolume(1.0);
-      await flutterTts.setPitch(1.0);
+      await flutterTts.setPitch(0.95); // 少し低めのピッチ
 
-      // ローカル音声エンジンを優先
+      // オフライン音声エンジンを優先
       await flutterTts.setSharedInstance(true);
-
-      setState(() {
-        isOfflineReady = true;
-      });
+      
+      // オフライン音声の確認
+      var engines = await flutterTts.getEngines;
+      if (engines != null && engines.isNotEmpty) {
+        // 利用可能なエンジンがある場合はオフライン対応
+        setState(() {
+          isOfflineReady = true;
+        });
+      } else {
+        setState(() {
+          isOfflineReady = false;
+        });
+      }
     } catch (e) {
       // エラーが発生してもアプリは動作する
       setState(() {
@@ -78,7 +107,10 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
     if (!isOfflineReady) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('音声機能が利用できません')));
+      ).showSnackBar(const SnackBar(
+        content: Text('オフライン音声機能が利用できません。デバイスの音声設定を確認してください。'),
+        duration: Duration(seconds: 3),
+      ));
       return;
     }
 
@@ -87,7 +119,10 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
     } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('音声再生に失敗しました')));
+      ).showSnackBar(const SnackBar(
+        content: Text('音声再生に失敗しました。アイルランド英語音声がインストールされていない可能性があります。'),
+        duration: Duration(seconds: 4),
+      ));
     }
   }
 
@@ -140,13 +175,15 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Version: 1.0.0'),
+            Text('Version: 1.1.0'),
             SizedBox(height: 8),
             Text('アイルランド旅行で使える実用的な英会話フレーズ集です。'),
             SizedBox(height: 8),
+            Text('🇮🇪 アイルランドなまりの音声に対応（オフライン対応）'),
+            SizedBox(height: 8),
             Text('プライバシーポリシー:'),
             Text(
-              '本アプリは個人情報を収集しません。すべてのデータはローカルに保存されます。',
+              '本アプリは個人情報を収集しません。すべてのデータはローカルに保存され、インターネット接続なしでも使用できます。',
               style: TextStyle(fontSize: 12),
             ),
           ],
