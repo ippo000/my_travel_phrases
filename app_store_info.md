@@ -4,7 +4,7 @@
 - **アプリ名**: Ireland Travel Phrases
 - **サブタイトル**: アイルランド旅行英会話フレーズ集
 - **プロモーションテキスト**: アイルランド旅行で使える実用的な英会話フレーズをオフラインで学習
-- **SKU**: ireland-travel-phrases-2025
+- **SKU**: ireland-travel-phrases
 - **Bundle ID**: com.ireland.travel.phrases
 
 ## 説明文
