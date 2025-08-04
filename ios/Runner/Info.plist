@@ -13,7 +13,6 @@
 	</array>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>音声再生機能のためにシステム音声エンジンを使用します</string>
-	<string>My Travel Phrases</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
