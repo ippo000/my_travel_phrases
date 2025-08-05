@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import '../config/api_config.dart';
 
@@ -10,6 +11,9 @@ class AiService {
         _geminiModel = GenerativeModel(
           model: 'gemini-2.5-flash',
           apiKey: ApiConfig.geminiApiKey,
+          generationConfig: GenerationConfig(
+            responseMimeType: 'application/json',
+          ),
         );
       }
     } catch (e) {
@@ -28,32 +32,25 @@ class AiService {
       final prompt =
           '''
 日本語のフレーズ「$japaneseText」をアイルランド旅行で使える自然な英語に翻訳してください。
-以下の形式で回答してください：
-English: [英語翻訳]
-Pronunciation: [カタカナ発音]
-
 アイルランドで使われる表現や方言を含めて、自然で実用的な翻訳をお願いします。
+
+以下のJSON形式で回答してください：
+{
+  "english": "英語翻訳",
+  "pronunciation": "カタカナ発音"
+}
 ''';
 
       final content = [Content.text(prompt)];
       final response = await _geminiModel.generateContent(content);
 
       if (response.text != null) {
-        final lines = response.text!.split('\n');
-        String english = '';
-        String pronunciation = '';
-
-        for (String line in lines) {
-          if (line.startsWith('English:')) {
-            english = line.replaceFirst('English:', '').trim();
-          } else if (line.startsWith('Pronunciation:')) {
-            pronunciation = line.replaceFirst('Pronunciation:', '').trim();
-          }
-        }
-
-        if (english.isNotEmpty && pronunciation.isNotEmpty) {
-          return {'english': english, 'pronunciation': pronunciation};
-        }
+        print('AI Translation Response: ${response.text}');
+        final jsonData = jsonDecode(response.text!);
+        return {
+          'english': jsonData['english'] as String,
+          'pronunciation': jsonData['pronunciation'] as String,
+        };
       }
       throw Exception('AI翻訳の応答を解析できませんでした');
     } catch (e) {
@@ -76,6 +73,9 @@ Pronunciation: [カタカナ発音]
     final content = [Content.text(prompt)];
     final response = await _geminiModel.generateContent(content);
 
+    if (response.text != null) {
+      print('AI Chat Response: ${response.text}');
+    }
     return response.text;
   }
 }

@@ -12,10 +12,8 @@ class Dialogs {
   }) {
     showDialog(
       context: context,
-      builder: (_) => _AddPhraseDialog(
-        aiService: aiService,
-        onPhraseAdded: onPhraseAdded,
-      ),
+      builder: (_) =>
+          _AddPhraseDialog(aiService: aiService, onPhraseAdded: onPhraseAdded),
     );
   }
 
@@ -101,9 +99,9 @@ class _AddPhraseDialogState extends State<_AddPhraseDialog> {
     if (_japaneseController.text.isEmpty) return;
     if (!widget.aiService.isConfigured) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Gemini APIキーが設定されていません')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Gemini APIキーが設定されていません')));
       }
       return;
     }
@@ -111,17 +109,18 @@ class _AddPhraseDialogState extends State<_AddPhraseDialog> {
     setState(() => _isAiLoading = true);
 
     try {
-      final result =
-          await widget.aiService.translatePhrase(_japaneseController.text);
+      final result = await widget.aiService.translatePhrase(
+        _japaneseController.text,
+      );
       if (result != null) {
         _englishController.text = result['english']!;
         _pronunciationController.text = result['pronunciation']!;
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('AI翻訳に失敗しました: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('AI翻訳に失敗しました: $e')));
       }
     } finally {
       if (mounted) {
@@ -140,8 +139,9 @@ class _AddPhraseDialogState extends State<_AddPhraseDialog> {
         'pronunciation': _pronunciationController.text,
       });
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('フレーズを追加しました')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('フレーズを追加しました')));
     }
   }
 
@@ -155,56 +155,73 @@ class _AddPhraseDialogState extends State<_AddPhraseDialog> {
           children: [
             TextField(
               controller: _japaneseController,
+              enabled: !_isAiLoading,
               decoration: InputDecoration(
                 labelText: '日本語',
                 hintText: '例: こんにちは',
-                suffixIcon: IconButton(
-                  icon: _isAiLoading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2.5),
-                        )
-                      : const Icon(Icons.auto_awesome),
-                  onPressed: _isAiLoading ? null : _handleAiTranslate,
-                  tooltip: 'AI翻訳',
-                ),
+                suffixIcon: _isAiLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2.5),
+                      )
+                    : IconButton(
+                        icon: const Icon(Icons.auto_awesome),
+                        onPressed: _handleAiTranslate,
+                        tooltip: 'AI翻訳',
+                      ),
               ),
               onSubmitted: (_) => _isAiLoading ? null : _handleAiTranslate(),
             ),
             const SizedBox(height: 16),
-            if (_isAiLoading)
-              const LoadingWithTips()
-            else
-              Column(
-                children: [
-                  TextField(
-                    controller: _englishController,
-                    decoration: const InputDecoration(
-                      labelText: '英語',
-                      hintText: '例: Hello',
+
+            // --- 変更点: AnimatedSwitcherを使用 ---
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              transitionBuilder: (child, animation) {
+                return FadeTransition(opacity: animation, child: child);
+              },
+              child: _isAiLoading
+                  // --- ローディング中の表示 ---
+                  // AnimatedSwitcherがウィジェットの変更を検知するためにKeyが必要
+                  ? Flexible(
+                      key: const ValueKey('loading'),
+                      child: LoadingWithTips(),
+                    )
+                  // --- 通常時の表示 ---
+                  : Column(
+                      // こちらにもKeyが必要
+                      key: const ValueKey('fields'),
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextField(
+                          controller: _englishController,
+                          decoration: const InputDecoration(
+                            labelText: '英語',
+                            hintText: '例: Hello',
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: _pronunciationController,
+                          decoration: const InputDecoration(
+                            labelText: '発音（カタカナ）',
+                            hintText: '例: ハロー',
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _pronunciationController,
-                    decoration: const InputDecoration(
-                      labelText: '発音（カタカナ）',
-                      hintText: '例: ハロー',
-                    ),
-                  ),
-                ],
-              ),
+            ),
           ],
         ),
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: _isAiLoading ? null : () => Navigator.of(context).pop(),
           child: const Text('キャンセル'),
         ),
         TextButton(
-          onPressed: _submit,
+          onPressed: _isAiLoading ? null : _submit,
           child: const Text('追加'),
         ),
       ],
@@ -309,14 +326,21 @@ class _AiChatDialogState extends State<_AiChatDialog> {
                         final message = _chatHistory[index];
                         final isUser = message['sender'] == 'user';
                         return Align(
-                          alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+                          alignment: isUser
+                              ? Alignment.centerRight
+                              : Alignment.centerLeft,
                           child: Container(
-                            margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                            margin: const EdgeInsets.symmetric(
+                              vertical: 4,
+                              horizontal: 8,
+                            ),
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: isUser
                                   ? Theme.of(context).colorScheme.primary
-                                  : Theme.of(context).colorScheme.surfaceVariant,
+                                  : Theme.of(
+                                      context,
+                                    ).colorScheme.surfaceVariant,
                               borderRadius: BorderRadius.circular(16),
                             ),
                             child: Text(
@@ -324,7 +348,9 @@ class _AiChatDialogState extends State<_AiChatDialog> {
                               style: TextStyle(
                                 color: isUser
                                     ? Theme.of(context).colorScheme.onPrimary
-                                    : Theme.of(context).colorScheme.onSurfaceVariant,
+                                    : Theme.of(
+                                        context,
+                                      ).colorScheme.onSurfaceVariant,
                               ),
                             ),
                           ),
@@ -348,7 +374,9 @@ class _AiChatDialogState extends State<_AiChatDialog> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                      ),
                     ),
                     onSubmitted: (_) => _sendMessage(),
                   ),
