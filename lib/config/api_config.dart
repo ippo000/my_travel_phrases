@@ -23,6 +23,11 @@ class ApiConfig {
   }
   
   static bool get isApiKeyConfigured {
-    return _apiKey.isNotEmpty || _debugApiKey.isNotEmpty;
+    try {
+      final key = geminiApiKey;
+      return key.isNotEmpty;
+    } catch (e) {
+      return false;
+    }
   }
 }
