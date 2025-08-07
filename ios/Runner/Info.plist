@@ -11,6 +11,8 @@
 		<string>ja</string>
 		<string>en</string>
 	</array>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>音声再生機能のためにシステム音声エンジンを使用します</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>音声再生機能のためにシステム音声エンジンを使用します</string>
 	<key>CFBundleExecutable</key>

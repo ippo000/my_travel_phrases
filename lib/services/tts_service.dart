@@ -1,4 +1,5 @@
 import 'package:flutter_tts/flutter_tts.dart';
+import 'dart:io' show Platform;
 
 class TtsService {
   late FlutterTts _flutterTts;
@@ -10,6 +11,20 @@ class TtsService {
     _flutterTts = FlutterTts();
     
     try {
+      // iOS固有の設定
+      if (Platform.isIOS) {
+        await _flutterTts.setSharedInstance(true);
+        await _flutterTts.setIosAudioCategory(
+          IosTextToSpeechAudioCategory.playback,
+          [
+            IosTextToSpeechAudioCategoryOptions.allowBluetooth,
+            IosTextToSpeechAudioCategoryOptions.allowBluetoothA2DP,
+            IosTextToSpeechAudioCategoryOptions.mixWithOthers,
+          ],
+          IosTextToSpeechAudioMode.spokenAudio,
+        );
+      }
+
       List<String> preferredLanguages = [
         'en-IE', // アイルランド英語
         'en-GB', // イギリス英語（アイルランドに近い）
@@ -34,10 +49,15 @@ class TtsService {
       await _flutterTts.setSpeechRate(0.45);
       await _flutterTts.setVolume(1.0);
       await _flutterTts.setPitch(0.95);
-      await _flutterTts.setSharedInstance(true);
 
-      var engines = await _flutterTts.getEngines;
-      _isOfflineReady = engines != null && engines.isNotEmpty;
+      // エンジンの確認
+      if (Platform.isIOS) {
+        var voices = await _flutterTts.getVoices;
+        _isOfflineReady = voices != null && voices.isNotEmpty;
+      } else {
+        var engines = await _flutterTts.getEngines;
+        _isOfflineReady = engines != null && engines.isNotEmpty;
+      }
     } catch (e) {
       _isOfflineReady = false;
     }
@@ -49,9 +69,14 @@ class TtsService {
     }
 
     try {
+      // iOS用の追加設定
+      if (Platform.isIOS) {
+        await _flutterTts.awaitSpeakCompletion(true);
+      }
+      
       await _flutterTts.speak(text);
     } catch (e) {
-      throw Exception('音声再生に失敗しました');
+      throw Exception('音声再生に失敗しました: ${e.toString()}');
     }
   }
 }
