@@ -6,9 +6,16 @@
 -keep class io.flutter.**  { *; }
 -keep class io.flutter.plugins.**  { *; }
 
-# Flutter TTS
--keep class com.tencent.** { *; }
+# Gson
+-keepattributes Signature
+-keepattributes *Annotation*
+-dontwarn sun.misc.**
+-keep class com.google.gson.** { *; }
+-keep class * implements com.google.gson.TypeAdapterFactory
+-keep class * implements com.google.gson.JsonSerializer
+-keep class * implements com.google.gson.JsonDeserializer
 
-# Google Play Core
--keep class com.google.android.play.core.** { *; }
--dontwarn com.google.android.play.core.**
+# Keep native methods
+-keepclassmembers class * {
+    native <methods>;
+}
