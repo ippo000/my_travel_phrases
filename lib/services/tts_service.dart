@@ -15,14 +15,15 @@ class TtsService {
       if (Platform.isIOS) {
         await _flutterTts.setSharedInstance(true);
         await _flutterTts.setIosAudioCategory(
-          IosTextToSpeechAudioCategory.playback,
+          IosTextToSpeechAudioCategory.playAndRecord,
           [
             IosTextToSpeechAudioCategoryOptions.allowBluetooth,
             IosTextToSpeechAudioCategoryOptions.allowBluetoothA2DP,
-            IosTextToSpeechAudioCategoryOptions.mixWithOthers,
+            IosTextToSpeechAudioCategoryOptions.defaultToSpeaker,
           ],
           IosTextToSpeechAudioMode.spokenAudio,
         );
+        await _flutterTts.awaitSpeakCompletion(true);
       }
 
       List<String> preferredLanguages = [
@@ -69,14 +70,30 @@ class TtsService {
     }
 
     try {
+      // 再生前に停止
+      await _flutterTts.stop();
+      
       // iOS用の追加設定
       if (Platform.isIOS) {
-        await _flutterTts.awaitSpeakCompletion(true);
+        await _flutterTts.setVolume(1.0);
+        await _flutterTts.setSpeechRate(0.45);
       }
       
       await _flutterTts.speak(text);
     } catch (e) {
       throw Exception('音声再生に失敗しました: ${e.toString()}');
     }
+  }
+
+  Future<void> stop() async {
+    try {
+      await _flutterTts.stop();
+    } catch (e) {
+      // エラーを無視
+    }
+  }
+
+  void dispose() {
+    _flutterTts.stop();
   }
 }
