@@ -1,6 +1,6 @@
 # Flutter Ireland Travel Phrases Makefile
 
-.PHONY: help install clean build run emulator devices doctor
+.PHONY: help install clean build run emulator devices doctor log log-debug log-ios run-debug run-log
 
 # デフォルトターゲット
 help:
@@ -44,5 +44,20 @@ doctor:
 
 # ログ確認
 log:
-# 	idevicesyslog.exe
+	flutter logs
+
+# デバッグログ確認（フィルタ付き）
+log-debug:
+	flutter logs | findstr "AddPhraseDialog\|AiService\|TravelPhrasesPage"
+
+# iOS デバイスログ確認
+log-ios:
 	idevicesyslog.exe | findstr "com.ippo.my_travel_phrases"
+
+# アプリをデバッグモードで実行
+run-debug:
+	flutter run --debug --verbose
+
+# ログ付きでアプリを実行
+run-log:
+	flutter run --debug 2>&1 | findstr "AddPhraseDialog\|AiService\|TravelPhrasesPage\|flutter:"

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:developer' as developer;
 import '../data/phrases_data.dart';
 import '../services/ai_service.dart';
 import '../services/tts_service.dart';
@@ -24,8 +25,10 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
   @override
   void initState() {
     super.initState();
+    developer.log('TravelPhrasesPage 初期化開始', name: 'TravelPhrasesPage');
     _ttsService.initialize();
     _aiService.initialize();
+    developer.log('TravelPhrasesPage 初期化完了', name: 'TravelPhrasesPage');
   }
 
   void _speak(String text) async {
@@ -151,15 +154,33 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
           ),
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () => Dialogs.showAddPhraseDialog(
-            context: context,
-            aiService: _aiService,
-            onPhraseAdded: (phrase) {
-              setState(() {
-                userPhrases.add(phrase);
-              });
-            },
-          ),
+          onPressed: () {
+            developer.log('フレーズ追加ダイアログを開く', name: 'TravelPhrasesPage');
+            Dialogs.showAddPhraseDialog(
+              context: context,
+              aiService: _aiService,
+              onPhraseAdded: (phrase) {
+                developer.log('新しいフレーズを受信: $phrase', name: 'TravelPhrasesPage');
+                
+                // 重複チェック
+                final isDuplicate = userPhrases.any((existingPhrase) => 
+                  existingPhrase['english']?.toLowerCase() == phrase['english']?.toLowerCase());
+                
+                if (isDuplicate) {
+                  developer.log('重複フレーズを検出: ${phrase['english']}', name: 'TravelPhrasesPage');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('このフレーズは既に存在します')),
+                  );
+                  return;
+                }
+                
+                setState(() {
+                  userPhrases.add(phrase);
+                  developer.log('ユーザーフレーズに追加完了。総数: ${userPhrases.length}', name: 'TravelPhrasesPage');
+                });
+              },
+            );
+          },
           backgroundColor: Theme.of(context).colorScheme.primary,
           foregroundColor: Theme.of(context).colorScheme.onPrimary,
           child: const Icon(Icons.add),

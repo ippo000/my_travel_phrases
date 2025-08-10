@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:developer' as developer;
 import '../services/ai_service.dart';
 import 'loading_with_tips.dart';
 
@@ -96,52 +97,110 @@ class _AddPhraseDialogState extends State<_AddPhraseDialog> {
   }
 
   Future<void> _handleAiTranslate() async {
-    if (_japaneseController.text.isEmpty) return;
+    final inputText = _japaneseController.text.trim();
+    developer.log('AI翻訳開始: "$inputText"', name: 'AddPhraseDialog');
+    
+    if (inputText.isEmpty) {
+      developer.log('入力テキストが空のため翻訳をスキップ', name: 'AddPhraseDialog');
+      return;
+    }
+    
     if (!widget.aiService.isConfigured) {
+      developer.log('Gemini APIキーが未設定', name: 'AddPhraseDialog');
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Gemini APIキーが設定されていません')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Gemini APIキーが設定されていません')),
+        );
       }
       return;
     }
 
     setState(() => _isAiLoading = true);
+    developer.log('AI翻訳リクエスト送信中...', name: 'AddPhraseDialog');
 
     try {
-      final result = await widget.aiService.translatePhrase(
-        _japaneseController.text,
-      );
-      if (result != null) {
-        _englishController.text = result['english']!;
-        _pronunciationController.text = result['pronunciation']!;
+      final result = await widget.aiService.translatePhrase(inputText);
+      
+      if (result != null && result.containsKey('english') && result.containsKey('pronunciation')) {
+        developer.log('AI翻訳成功: ${result.toString()}', name: 'AddPhraseDialog');
+        
+        if (mounted) {
+          _englishController.text = result['english']!.trim();
+          _pronunciationController.text = result['pronunciation']!.trim();
+          developer.log('翻訳結果をフィールドに設定完了', name: 'AddPhraseDialog');
+        }
+      } else {
+        developer.log('AI翻訳結果が無効: $result', name: 'AddPhraseDialog');
+        throw Exception('翻訳結果の形式が正しくありません');
       }
     } catch (e) {
+      developer.log('AI翻訳エラー: $e', name: 'AddPhraseDialog');
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('AI翻訳に失敗しました: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('AI翻訳に失敗しました: ${e.toString()}')),
+        );
       }
     } finally {
       if (mounted) {
         setState(() => _isAiLoading = false);
+        developer.log('AI翻訳処理完了', name: 'AddPhraseDialog');
       }
     }
   }
 
   void _submit() {
-    if (_japaneseController.text.isNotEmpty &&
-        _englishController.text.isNotEmpty &&
-        _pronunciationController.text.isNotEmpty) {
-      widget.onPhraseAdded({
-        'japanese': _japaneseController.text,
-        'english': _englishController.text,
-        'pronunciation': _pronunciationController.text,
-      });
+    final japanese = _japaneseController.text.trim();
+    final english = _englishController.text.trim();
+    final pronunciation = _pronunciationController.text.trim();
+    
+    developer.log('フレーズ追加試行: 日本語="$japanese", 英語="$english", 発音="$pronunciation"', name: 'AddPhraseDialog');
+    
+    // バリデーション
+    if (japanese.isEmpty) {
+      developer.log('バリデーションエラー: 日本語が空', name: 'AddPhraseDialog');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('日本語を入力してください')),
+      );
+      return;
+    }
+    
+    if (english.isEmpty) {
+      developer.log('バリデーションエラー: 英語が空', name: 'AddPhraseDialog');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('英語を入力してください')),
+      );
+      return;
+    }
+    
+    if (pronunciation.isEmpty) {
+      developer.log('バリデーションエラー: 発音が空', name: 'AddPhraseDialog');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('発音を入力してください')),
+      );
+      return;
+    }
+    
+    try {
+      final newPhrase = {
+        'japanese': japanese,
+        'english': english,
+        'pronunciation': pronunciation,
+      };
+      
+      developer.log('フレーズ追加実行: $newPhrase', name: 'AddPhraseDialog');
+      widget.onPhraseAdded(newPhrase);
+      
       Navigator.of(context).pop();
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('フレーズを追加しました')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('フレーズを追加しました')),
+      );
+      
+      developer.log('フレーズ追加成功', name: 'AddPhraseDialog');
+    } catch (e) {
+      developer.log('フレーズ追加エラー: $e', name: 'AddPhraseDialog');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('フレーズの追加に失敗しました: ${e.toString()}')),
+      );
     }
   }
 
