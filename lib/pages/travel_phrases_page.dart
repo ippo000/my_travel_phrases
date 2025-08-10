@@ -75,16 +75,14 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
     for (var category in categorizedPhrases.values) {
       for (var phrase in category) {
         if (phrase['japanese']!.contains(searchQuery) ||
-            phrase['english']!.toLowerCase().contains(searchQuery.toLowerCase()) ||
-            phrase['pronunciation']!.contains(searchQuery)) {
+            phrase['english']!.toLowerCase().contains(searchQuery.toLowerCase())) {
           results.add(phrase);
         }
       }
     }
     for (var phrase in userPhrases) {
       if (phrase['japanese']!.contains(searchQuery) ||
-          phrase['english']!.toLowerCase().contains(searchQuery.toLowerCase()) ||
-          phrase['pronunciation']!.contains(searchQuery)) {
+          phrase['english']!.toLowerCase().contains(searchQuery.toLowerCase())) {
         results.add(phrase);
       }
     }

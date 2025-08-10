@@ -85,14 +85,12 @@ class _AddPhraseDialog extends StatefulWidget {
 class _AddPhraseDialogState extends State<_AddPhraseDialog> {
   final _japaneseController = TextEditingController();
   final _englishController = TextEditingController();
-  final _pronunciationController = TextEditingController();
   bool _isAiLoading = false;
 
   @override
   void dispose() {
     _japaneseController.dispose();
     _englishController.dispose();
-    _pronunciationController.dispose();
     super.dispose();
   }
 
@@ -121,12 +119,11 @@ class _AddPhraseDialogState extends State<_AddPhraseDialog> {
     try {
       final result = await widget.aiService.translatePhrase(inputText);
       
-      if (result != null && result.containsKey('english') && result.containsKey('pronunciation')) {
+      if (result != null && result.containsKey('english')) {
         developer.log('AI翻訳成功: ${result.toString()}', name: 'AddPhraseDialog');
         
         if (mounted) {
           _englishController.text = result['english']!.trim();
-          _pronunciationController.text = result['pronunciation']!.trim();
           developer.log('翻訳結果をフィールドに設定完了', name: 'AddPhraseDialog');
         }
       } else {
@@ -151,9 +148,8 @@ class _AddPhraseDialogState extends State<_AddPhraseDialog> {
   void _submit() {
     final japanese = _japaneseController.text.trim();
     final english = _englishController.text.trim();
-    final pronunciation = _pronunciationController.text.trim();
     
-    developer.log('フレーズ追加試行: 日本語="$japanese", 英語="$english", 発音="$pronunciation"', name: 'AddPhraseDialog');
+    developer.log('フレーズ追加試行: 日本語="$japanese", 英語="$english"', name: 'AddPhraseDialog');
     
     // バリデーション
     if (japanese.isEmpty) {
@@ -172,19 +168,10 @@ class _AddPhraseDialogState extends State<_AddPhraseDialog> {
       return;
     }
     
-    if (pronunciation.isEmpty) {
-      developer.log('バリデーションエラー: 発音が空', name: 'AddPhraseDialog');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('発音を入力してください')),
-      );
-      return;
-    }
-    
     try {
       final newPhrase = {
         'japanese': japanese,
         'english': english,
-        'pronunciation': pronunciation,
       };
       
       developer.log('フレーズ追加実行: $newPhrase', name: 'AddPhraseDialog');
@@ -248,27 +235,14 @@ class _AddPhraseDialogState extends State<_AddPhraseDialog> {
                       child: LoadingWithTips(),
                     )
                   // --- 通常時の表示 ---
-                  : Column(
+                  : TextField(
                       // こちらにもKeyが必要
-                      key: const ValueKey('fields'),
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        TextField(
-                          controller: _englishController,
-                          decoration: const InputDecoration(
-                            labelText: '英語',
-                            hintText: '例: Hello',
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        TextField(
-                          controller: _pronunciationController,
-                          decoration: const InputDecoration(
-                            labelText: '発音（カタカナ）',
-                            hintText: '例: ハロー',
-                          ),
-                        ),
-                      ],
+                      key: const ValueKey('field'),
+                      controller: _englishController,
+                      decoration: const InputDecoration(
+                        labelText: '英語',
+                        hintText: '例: Hello',
+                      ),
                     ),
             ),
           ],
