@@ -4,8 +4,12 @@ import 'dart:io' show Platform;
 class TtsService {
   late FlutterTts _flutterTts;
   bool _isOfflineReady = false;
+  String? _currentLanguage;
+  List<dynamic>? _availableVoices;
 
   bool get isOfflineReady => _isOfflineReady;
+  String? get currentLanguage => _currentLanguage;
+  List<dynamic>? get availableVoices => _availableVoices;
 
   Future<void> initialize() async {
     _flutterTts = FlutterTts();
@@ -36,6 +40,7 @@ class TtsService {
       for (String lang in preferredLanguages) {
         try {
           await _flutterTts.setLanguage(lang);
+          _currentLanguage = lang;
           languageSet = true;
           break;
         } catch (e) {
@@ -45,6 +50,7 @@ class TtsService {
 
       if (!languageSet) {
         await _flutterTts.setLanguage('en-US');
+        _currentLanguage = 'en-US';
       }
 
       await _flutterTts.setSpeechRate(0.45);
@@ -53,8 +59,8 @@ class TtsService {
 
       // エンジンの確認
       if (Platform.isIOS) {
-        var voices = await _flutterTts.getVoices;
-        _isOfflineReady = voices != null && voices.isNotEmpty;
+        _availableVoices = await _flutterTts.getVoices;
+        _isOfflineReady = _availableVoices != null && _availableVoices!.isNotEmpty;
       } else {
         var engines = await _flutterTts.getEngines;
         _isOfflineReady = engines != null && engines.isNotEmpty;
@@ -91,6 +97,19 @@ class TtsService {
     } catch (e) {
       // エラーを無視
     }
+  }
+
+  // デバッグ用：利用可能な音声を取得
+  Future<Map<String, dynamic>> getLanguageInfo() async {
+    var voices = await _flutterTts.getVoices;
+    var languages = await _flutterTts.getLanguages;
+    
+    return {
+      'currentLanguage': _currentLanguage,
+      'availableVoices': voices,
+      'availableLanguages': languages,
+      'isOfflineReady': _isOfflineReady,
+    };
   }
 
   void dispose() {

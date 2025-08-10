@@ -6,6 +6,7 @@ import '../services/tts_service.dart';
 import '../widgets/phrase_card.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/tab_views.dart';
+import '../screens/debug_screen.dart';
 
 class TravelPhrasesPage extends StatefulWidget {
   const TravelPhrasesPage({super.key});
@@ -124,6 +125,17 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
                 aiService: _aiService,
               ),
               tooltip: 'AI会話練習',
+            ),
+            const SizedBox(width: 8),
+            IconButton.outlined(
+              icon: const Icon(Icons.bug_report),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => DebugScreen(ttsService: _ttsService),
+                ),
+              ),
+              tooltip: 'TTS デバッグ',
             ),
             const SizedBox(width: 8),
             IconButton.outlined(

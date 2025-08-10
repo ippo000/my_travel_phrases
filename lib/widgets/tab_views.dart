@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'phrase_card.dart';
 
 class TabViews {
   static Widget buildSearchTab({
@@ -16,7 +15,7 @@ class TabViews {
             hintText: 'フレーズを検索...',
             leading: const Icon(Icons.search),
             onChanged: onSearchChanged,
-            elevation: MaterialStateProperty.all(2),
+            elevation: WidgetStateProperty.all(2),
           ),
         ),
         Expanded(
@@ -26,13 +25,11 @@ class TabViews {
                   title: 'キーワードを入力してフレーズを検索してください',
                 )
               : searchResults.isEmpty
-              ? _buildEmptyState(
-                  icon: Icons.search_off,
-                  title: '検索結果がありません',
-                )
+              ? _buildEmptyState(icon: Icons.search_off, title: '検索結果がありません')
               : ListView.builder(
                   itemCount: searchResults.length,
-                  itemBuilder: (context, index) => buildPhraseCard(searchResults[index]),
+                  itemBuilder: (context, index) =>
+                      buildPhraseCard(searchResults[index]),
                 ),
         ),
       ],
@@ -67,7 +64,8 @@ class TabViews {
           )
         : ListView.builder(
             itemCount: userPhrases.length,
-            itemBuilder: (context, index) => buildPhraseCard(userPhrases[index]),
+            itemBuilder: (context, index) =>
+                buildPhraseCard(userPhrases[index]),
           );
   }
 
