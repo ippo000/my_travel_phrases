@@ -1,9 +1,8 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class ApiConfig {
   // 環境変数からAPIキーを取得（本番環境推奨）
   static const String _apiKey = String.fromEnvironment('GEMINI_API_KEY');
-  
-  // デバッグ用のフォールバック（開発時のみ使用）
-  static const String _debugApiKey = '';
   
   static String get geminiApiKey {
     // 環境変数が設定されている場合はそれを使用
@@ -11,15 +10,13 @@ class ApiConfig {
       return _apiKey;
     }
     
-    // デバッグモードでのみフォールバックを使用
-    assert(() {
-      if (_debugApiKey.isEmpty) {
-        throw Exception('Gemini API key not configured. Please set GEMINI_API_KEY environment variable or configure _debugApiKey for development.');
-      }
-      return true;
-    }());
+    // .envファイルからAPIキーを取得
+    final envApiKey = dotenv.env['GEMINI_API_KEY'] ?? '';
+    if (envApiKey.isNotEmpty) {
+      return envApiKey;
+    }
     
-    return _debugApiKey;
+    throw Exception('Gemini API key not configured. Please set GEMINI_API_KEY in .env file or as environment variable.');
   }
   
   static bool get isApiKeyConfigured {

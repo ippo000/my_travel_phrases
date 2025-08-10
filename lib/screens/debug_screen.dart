@@ -119,10 +119,10 @@ class _DebugScreenState extends State<DebugScreen> {
             const SizedBox(height: 8),
             if (voices != null && voices.isNotEmpty)
               ...voices.take(10).map((voice) {
-                final voiceMap = voice as Map<String, dynamic>;
-                final name = voiceMap['name'] ?? 'Unknown';
-                final locale = voiceMap['locale'] ?? 'Unknown';
-                final isIrish = locale.toString().contains('en_IE') || locale.toString().contains('en-IE');
+                final voiceMap = Map<String, dynamic>.from(voice as Map);
+                final name = voiceMap['name']?.toString() ?? 'Unknown';
+                final locale = voiceMap['locale']?.toString() ?? 'Unknown';
+                final isIrish = locale.contains('en_IE') || locale.contains('en-IE');
                 
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 2),

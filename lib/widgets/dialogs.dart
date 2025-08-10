@@ -221,30 +221,19 @@ class _AddPhraseDialogState extends State<_AddPhraseDialog> {
             ),
             const SizedBox(height: 16),
 
-            // --- 変更点: AnimatedSwitcherを使用 ---
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              transitionBuilder: (child, animation) {
-                return FadeTransition(opacity: animation, child: child);
-              },
-              child: _isAiLoading
-                  // --- ローディング中の表示 ---
-                  // AnimatedSwitcherがウィジェットの変更を検知するためにKeyが必要
-                  ? Flexible(
-                      key: const ValueKey('loading'),
-                      child: LoadingWithTips(),
-                    )
-                  // --- 通常時の表示 ---
-                  : TextField(
-                      // こちらにもKeyが必要
-                      key: const ValueKey('field'),
-                      controller: _englishController,
-                      decoration: const InputDecoration(
-                        labelText: '英語',
-                        hintText: '例: Hello',
-                      ),
-                    ),
-            ),
+            if (_isAiLoading)
+              const SizedBox(
+                height: 60,
+                child: LoadingWithTips(),
+              )
+            else
+              TextField(
+                controller: _englishController,
+                decoration: const InputDecoration(
+                  labelText: '英語',
+                  hintText: '例: Hello',
+                ),
+              ),
           ],
         ),
       ),
