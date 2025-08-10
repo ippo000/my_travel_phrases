@@ -41,3 +41,8 @@ devices:
 # Flutter環境確認
 doctor:
 	flutter doctor
+
+# ログ確認
+log:
+# 	idevicesyslog.exe
+	idevicesyslog.exe | findstr "com.ippo.my_travel_phrases"
