@@ -114,7 +114,7 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
       child: Scaffold(
         appBar: AppBar(
           title: Text(
-            '🍀 Ireland Travel Phrases',
+            '🍀 Ireland Phrases',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600),
           ),
           actions: [
