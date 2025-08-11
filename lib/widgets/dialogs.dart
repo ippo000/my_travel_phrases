@@ -222,8 +222,8 @@ class _AddPhraseDialogState extends State<_AddPhraseDialog> {
             const SizedBox(height: 16),
 
             if (_isAiLoading)
-              const SizedBox(
-                height: 60,
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8.0),
                 child: LoadingWithTips(),
               )
             else
