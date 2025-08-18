@@ -3,6 +3,7 @@ import 'dart:developer' as developer;
 import '../data/phrases_data.dart';
 import '../services/ai_service.dart';
 import '../services/tts_service.dart';
+import '../services/storage_service.dart';
 import '../widgets/phrase_card.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/tab_views.dart';
@@ -29,7 +30,17 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
     developer.log('TravelPhrasesPage 初期化開始', name: 'TravelPhrasesPage');
     _ttsService.initialize();
     _aiService.initialize();
+    _loadData();
     developer.log('TravelPhrasesPage 初期化完了', name: 'TravelPhrasesPage');
+  }
+
+  Future<void> _loadData() async {
+    final loadedPhrases = await StorageService.loadUserPhrases();
+    final loadedFavorites = await StorageService.loadFavorites();
+    setState(() {
+      userPhrases = loadedPhrases;
+      favorites = loadedFavorites;
+    });
   }
 
   void _speak(String text) async {
@@ -50,6 +61,7 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
         favorites.add(phraseKey);
       }
     });
+    StorageService.saveFavorites(favorites);
   }
 
   List<Map<String, String>> _getFavoritePhrases() {
@@ -188,6 +200,7 @@ class _TravelPhrasesPageState extends State<TravelPhrasesPage> {
                   userPhrases.add(phrase);
                   developer.log('ユーザーフレーズに追加完了。総数: ${userPhrases.length}', name: 'TravelPhrasesPage');
                 });
+                StorageService.saveUserPhrases(userPhrases);
               },
             );
           },

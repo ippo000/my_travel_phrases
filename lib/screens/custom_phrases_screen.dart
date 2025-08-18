@@ -20,7 +20,7 @@ class _CustomPhrasesScreenState extends State<CustomPhrasesScreen> {
   // 保存されたフレーズを読み込み
   Future<void> _loadPhrases() async {
     try {
-      final phrases = await StorageService.loadCustomPhrases();
+      final phrases = await StorageService.loadUserPhrases();
       setState(() {
         _customPhrases = phrases;
       });
@@ -46,7 +46,7 @@ class _CustomPhrasesScreenState extends State<CustomPhrasesScreen> {
 
     // データを永続化
     try {
-      await StorageService.saveCustomPhrases(_customPhrases);
+      await StorageService.saveUserPhrases(_customPhrases);
       _japaneseController.clear();
       _englishController.clear();
       ScaffoldMessenger.of(context).showSnackBar(
@@ -67,7 +67,7 @@ class _CustomPhrasesScreenState extends State<CustomPhrasesScreen> {
     });
     
     try {
-      await StorageService.saveCustomPhrases(_customPhrases);
+      await StorageService.saveUserPhrases(_customPhrases);
     } catch (e) {
       print('削除エラー: $e');
     }
