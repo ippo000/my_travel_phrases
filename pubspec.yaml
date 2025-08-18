@@ -21,6 +21,7 @@ version: 1.1.1+9
 environment:
   sdk: ^3.8.1
 
+
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
 # consider running `flutter pub upgrade --major-versions`. Alternatively,
@@ -38,6 +39,7 @@ dependencies:
   google_generative_ai: ^0.4.3
   http: ^1.1.0
   flutter_dotenv: ^5.1.0
+  shared_preferences: ^2.2.2
 
 dev_dependencies:
   flutter_test:
